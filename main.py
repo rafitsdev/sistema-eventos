@@ -1,22 +1,39 @@
 eventos = []
 eventos_incricoes = {}
 
-def cadastrar_evento():
+def confirmar_acao(mensagem):
     while True:
-      nome = input("\n📌 Nome do evento: ").strip()
-      data = input("📅 Data do evento (DD/MM/AAAA): ").strip()
-      descricao = input("📖 Descrição do evento: ")
-      try:
-          vagas = input("👥 Número máximo de participantes: ")
-          evento = {'nome': nome, 'data': data, 'descricao': descricao, 'vagas': vagas, 'inscritos': []}
-          eventos.append(evento)
-          eventos_incricoes[nome] = []
-          print("\n✅ Evento cadastrado com sucesso!")
-          return
-      except ValueError:
-          print("❌ Erro: O número de vagas deve ser um valor numérico. \n")
-          continue
+        resposta = input(mensagem).strip().lower()
+        if resposta in ["s", "sim"]:
+            return True
+        elif resposta in ["n", "nao", "não"]:
+            return False
+        else:
+            print("❌ Opção inválida. Digite 'S' para Sim ou 'N' para Não.")
 
+def cadastrar_evento():
+    nome = input("\n📌 Nome do evento: ").strip()
+    data = input("📅 Data do evento (DD/MM/AAAA): ").strip()
+    descricao = input("📖 Descrição do evento: ").strip()
+
+    while True:
+        try:
+            vagas = int(input("👥 Número máximo de participantes: "))
+
+            if vagas <= 0:
+                if not confirmar_acao("\n❌ O número de vagas deve ser maior que zero.\n Gostaria de tentar novamente? (s/n) "):
+                    return
+                continue
+            break
+        except ValueError:
+            print("❌ Erro: O número de vagas deve ser um valor numérico. \n")
+            continue
+
+    evento = {'nome': nome, 'data': data, 'descricao': descricao, 'vagas': vagas, 'inscritos': []}
+    eventos.append(evento)
+    eventos_incricoes[nome] = []
+    print("\n✅ Evento cadastrado com sucesso!")
+    return
 
 def menu():
     while True:
@@ -45,5 +62,4 @@ def menu():
         else:
             print("❌ Opção inválida, tente novamente.\n")
 
-# 🚀 Iniciar o sistema
 menu()
