@@ -1,3 +1,23 @@
+eventos = []
+eventos_incricoes = {}
+
+def cadastrar_evento():
+    while True:
+      nome = input("\n📌 Nome do evento: ").strip()
+      data = input("📅 Data do evento (DD/MM/AAAA): ").strip()
+      descricao = input("📖 Descrição do evento: ")
+      try:
+          vagas = input("👥 Número máximo de participantes: ")
+          evento = {'nome': nome, 'data': data, 'descricao': descricao, 'vagas': vagas, 'inscritos': []}
+          eventos.append(evento)
+          eventos_incricoes[nome] = []
+          print("\n✅ Evento cadastrado com sucesso!")
+          return
+      except ValueError:
+          print("❌ Erro: O número de vagas deve ser um valor numérico. \n")
+          continue
+
+
 def menu():
     while True:
         print("\n🎭 ===== MENU =====")
@@ -10,7 +30,7 @@ def menu():
         opcao = input("👉 Escolha uma opção: ").strip()
         
         if opcao == "1":
-            print("Você escolheu a opção 'Cadastrar Evento'")
+            cadastrar_evento()
         elif opcao == "2":
             print("Você escolheu a opção 'Atualizar Evento'")
         elif opcao == "3":
