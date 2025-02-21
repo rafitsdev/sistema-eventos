@@ -1,0 +1,14 @@
+{
+    "eventos": [
+        {
+            "nome": "Tech Week",
+            "data": "20/10/24",
+            "descricao": "Semana da Tecnologia UniFECAF",
+            "vagas": 200,
+            "inscritos": []
+        }
+    ],
+    "inscricoes": {
+        "Tech Week": []
+    }
+}

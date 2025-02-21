@@ -1,4 +1,7 @@
 import time
+import json
+
+ARQUIVO_EVENTOS = "data/eventos.json"
 
 eventos = []
 eventos_inscricoes = {}
@@ -12,6 +15,10 @@ def confirmar_acao(mensagem):
             return False
         else:
             print("❌ Opção inválida. Digite 'S' para Sim ou 'N' para Não.")
+
+def salvar_dados():
+    with open(ARQUIVO_EVENTOS, "w") as arquivo:
+        json.dump({"eventos": eventos, "inscricoes": eventos_inscricoes}, arquivo, indent=4)
 
 def cadastrar_evento():
     nome = input("\n📌 Nome do evento: ").strip()
@@ -34,6 +41,7 @@ def cadastrar_evento():
     evento = {'nome': nome, 'data': data, 'descricao': descricao, 'vagas': vagas, 'inscritos': []}
     eventos.append(evento)
     eventos_inscricoes[nome] = []
+    salvar_dados()
     print("\n✅ Evento cadastrado com sucesso!")
     return
 
@@ -75,6 +83,7 @@ def atualizar_evento():
 
                 print("\n⏳ Atualizando dados do evento, aguarde... ")
                 time.sleep(2)
+                salvar_dados()
                 print("\n✅ Evento atualizado com sucesso!")
 
                 if not confirmar_acao("\n📖 Deseja alterar mais alguma coisa neste evento? (S/N): "):
@@ -85,12 +94,12 @@ def atualizar_evento():
 def menu():
     while True:
         print("\n🎭 ===== MENU =====")
-        print("1️⃣ Cadastrar Evento")
-        print("2️⃣ Atualizar Evento")
-        print("3️⃣ Visualizar Eventos")
-        print("4️⃣ Me Inscrever em Evento")
-        print("5️⃣ Excluir Evento")
-        print("6️⃣ Sair")
+        print("1️⃣  Cadastrar Evento")
+        print("2️⃣  Atualizar Evento")
+        print("3️⃣  Visualizar Eventos")
+        print("4️⃣  Me Inscrever em Evento")
+        print("5️⃣  Excluir Evento")
+        print("6️⃣  Sair")
         opcao = input("👉 Escolha uma opção: ").strip()
         
         if opcao == "1":
