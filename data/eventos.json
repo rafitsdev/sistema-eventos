@@ -6,6 +6,13 @@
             "descricao": "Semana da Tecnologia UniFECAF",
             "vagas": 200,
             "inscritos": []
+        },
+        {
+            "nome": "Tech Week",
+            "data": "20/10/2024",
+            "descricao": "Semana da Tecnologia UniFECAF",
+            "vagas": 200,
+            "inscritos": []
         }
     ],
     "inscricoes": {

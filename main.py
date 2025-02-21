@@ -26,8 +26,8 @@ def carregar_dados():
     try:
         with open(ARQUIVO_EVENTOS, "r") as arquivo:
             dados = json.load(arquivo)
-            eventos = dados.get["eventos", []]
-            eventos_inscricoes = dados.get["inscricoes", {}]
+            eventos = dados.get("eventos", [])
+            eventos_inscricoes = dados.get("inscricoes", {})
     except (FileNotFoundError, json.JSONDecodeError):
         salvar_dados()
 
