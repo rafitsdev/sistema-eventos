@@ -20,6 +20,17 @@ def salvar_dados():
     with open(ARQUIVO_EVENTOS, "w") as arquivo:
         json.dump({"eventos": eventos, "inscricoes": eventos_inscricoes}, arquivo, indent=4)
 
+def carregar_dados():
+
+    global eventos, eventos_inscricoes
+    try:
+        with open(ARQUIVO_EVENTOS, "r") as arquivo:
+            dados = json.load(arquivo)
+            eventos = dados.get["eventos", []]
+            eventos_inscricoes = dados.get["inscricoes", {}]
+    except (FileNotFoundError, json.JSONDecodeError):
+        salvar_dados()
+
 def cadastrar_evento():
     nome = input("\n📌 Nome do evento: ").strip()
     data = input("📅 Data do evento (DD/MM/AAAA): ").strip()
@@ -92,6 +103,8 @@ def atualizar_evento():
     print("\n⚠ Evento não encontrado!")
 
 def menu():
+    carregar_dados()
+
     while True:
         print("\n🎭 ===== MENU =====")
         print("1️⃣  Cadastrar Evento")
