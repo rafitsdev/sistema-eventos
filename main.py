@@ -1,6 +1,8 @@
 import time
 import json
 import os
+import re
+from datetime import datetime
 
 data_dir = "data"
 os.makedirs(data_dir, exist_ok=True)
@@ -11,6 +13,7 @@ coordenadores_json = os.path.join(data_dir, "coordenadores.json")
 
 
 def confirmar_acao(mensagem):
+    """Funções de Suporte - Confirmar Ação"""
     while True:
         resposta = input(mensagem).strip().lower()
         if resposta in ["s", "sim"]:
@@ -21,15 +24,16 @@ def confirmar_acao(mensagem):
             print("❌ Opção inválida. Digite 'S' para Sim ou 'N' para Não.")
 
 def gerar_user_id(usuarios):
-    return str(len(usuarios) + 1)
+    """Funções de Suporte - Gerar IDs para os usuários"""
+    return str(max(map(int, usuarios.keys()), default= 0) + 1)
 
 def validar_email(email):
-    import re
+    """Funções de Suporte - Validação de email"""
     padrao = r"[^@]+@[^@]+\.[^@]+"
     return re.match(padrao, email) is not None
 
 def validar_data(data):
-    from datetime import datetime
+    """Funções de Suporte - Validação de Formato de Data"""
     try:
         datetime.strptime(data, "%d/%m/%Y")
         return True
@@ -39,6 +43,7 @@ def validar_data(data):
 
 
 def carregar_eventos():
+    """Carregando Eventos no JSON"""
 
     if not os.path.exists(eventos_json):
         with open(eventos_json, "w") as f:
@@ -49,7 +54,15 @@ def carregar_eventos():
 
     return dados_eventos.get("eventos", []), dados_eventos.get("inscricoes", {})
 
+def salvar_eventos(eventos, eventos_inscricoes):
+    """Salvando Eventos no JSON"""
+
+    with open(eventos_json, "w") as f:
+        json.dump({"eventos": eventos, "inscricoes": eventos_inscricoes}, f, indent=4)
+
+
 def carregar_usuarios():
+    """Carregando Usuários no JSON"""
 
     if not os.path.exists(alunos_json):
         with open(alunos_json, "w") as f:
@@ -67,21 +80,18 @@ def carregar_usuarios():
         coordenadores = json.load(f)
     return alunos, coordenadores
 
-
-def salvar_eventos(eventos, eventos_inscricoes):
-
-    with open(eventos_json, "w") as f:
-        json.dump({"eventos": eventos, "inscricoes": eventos_inscricoes}, f, indent=4)
-
-
 def salvar_usuarios(alunos, coordenadores):
+    """Salvando Usuários no JSON"""
     with open(alunos_json, "w") as f:
         json.dump(alunos, f, indent=4)
     with open(coordenadores_json, "w") as f:
         json.dump(coordenadores, f, indent=4)
 
 
+
 def registrar_usuario():
+    """Registrando Usuários no Sistema"""
+
     alunos, coordenadores = carregar_usuarios()
 
     nome = input("\n🆕 Digite seu nome: ").strip()
@@ -112,10 +122,39 @@ def registrar_usuario():
         coordenadores[user_id] = usuario
 
     salvar_usuarios(alunos, coordenadores)
-    print(f'\n✅ Registro realizado com sucesso! Seu ID é {user_id}')
+    print(f"\n✅ Registro realizado com sucesso! Seu ID é {user_id}")
     return user_id, tipo
 
+def autenticar_usuario():
+    """Autenticando Usuário no Sistema"""
+    
+    while True:
+        alunos, coordenadores = carregar_usuarios()
+        email = input("✉ Digite seu email para login: ").strip()
+        usuario_encontrado = None
+
+        for usuario in alunos.values():
+            if usuario["email"] == email:
+                usuario_encontrado = usuario
+                break
+        
+        if not usuario_encontrado:
+            for usuario in coordenadores.values():
+                if usuario["email"] == email:
+                    usuario_encontrado = usuario
+                    break
+
+        if usuario_encontrado:
+            print(f"✅ Login bem-sucedido! Olá, {usuario_encontrado['nome']} ({usuario['tipo'].capitalize()})!")
+            return usuario_encontrado["email"], usuario_encontrado["tipo"]
+        
+        if not confirmar_acao("\n❌ Usuário não encontrado. Gostaria de se cadastrar? (s/n) "):
+            return None, None
+        return registrar_usuario()
+
+
 def cadastrar_evento():
+    """Cadastrando Eventos no Sistema"""
     eventos, eventos_inscricoes = carregar_eventos()
 
     nome = input("\n📌 Nome do evento: ").strip()
@@ -147,6 +186,7 @@ def cadastrar_evento():
 
 
 def atualizar_evento():
+    """Atualizando Eventos do Sistema"""
     eventos, eventos_inscricoes = carregar_eventos()
 
     nome = input("\n🔎 Digite o nome do evento que deseja atualizar: ").strip()
@@ -194,16 +234,20 @@ def atualizar_evento():
 
     print("\n⚠ Evento não encontrado!")
 
+
+
 def menu():
+    """Menu do Sistema"""
     carregar_eventos()
     carregar_usuarios()
+
     usuario_atual, tipo_usuario = None, None
     while not usuario_atual:
-        opcao = input("🆕 Deseja 1️⃣ Registrar-se ou 2️⃣ Fazer Login? ").strip()
+        opcao = input("🆕 Deseja [1] Registrar-se ou [2] Fazer Login? ").strip()
         if opcao == "1":
             usuario_atual, tipo_usuario = registrar_usuario()
         elif opcao == "2":
-            print("Você escolheu fazer login")
+            usuario_atual, tipo_usuario = autenticar_usuario()
         else:
             print("❌ Opção inválida! Escolha 1️⃣ ou 2️⃣: ")
 

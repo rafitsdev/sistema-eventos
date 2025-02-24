@@ -1,1 +1,10 @@
-{}
+{
+    "1": {
+        "id": "1",
+        "nome": "Rafa",
+        "email": "rr@gmail.com",
+        "tipo": "aluno",
+        "curso": "ADS",
+        "inscricoes": []
+    }
+}
