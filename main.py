@@ -235,6 +235,16 @@ def atualizar_evento():
     print("\n⚠ Evento não encontrado!")
 
 
+def visualizar_evento():
+    """Exibe a Lista de Eventos Disponíveis"""
+    eventos, _ = carregar_eventos()
+
+    if not eventos:
+        print("\n❌ Nenhum evento disponível no momento.")
+        return
+    for i, evento in enumerate(eventos, 1):
+        vagas_restantes = evento['vagas'] - len(evento['inscritos'])
+        print(f"{i}. 🎫 {evento['nome']} - {evento['data']}\n 📖 {evento['descricao']}\n 🔢 Vagas restantes: {vagas_restantes}\n")
 
 def menu():
     """Menu do Sistema"""
