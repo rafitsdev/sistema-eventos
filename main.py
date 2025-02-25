@@ -235,7 +235,7 @@ def atualizar_evento():
     print("\n⚠ Evento não encontrado!")
 
 
-def visualizar_evento():
+def visualizar_eventos():
     """Exibe a Lista de Eventos Disponíveis"""
     eventos, _ = carregar_eventos()
 
@@ -259,32 +259,50 @@ def menu():
         elif opcao == "2":
             usuario_atual, tipo_usuario = autenticar_usuario()
         else:
-            print("❌ Opção inválida! Escolha 1️⃣ ou 2️⃣: ")
+            print("❌ Opção inválida! Registre-se [1] ou Faça Login [2]: ")
 
-    while True:
-        print("\n🎭 ===== MENU =====")
-        print("1️⃣  Cadastrar Evento")
-        print("2️⃣  Atualizar Evento")
-        print("3️⃣  Visualizar Eventos")
-        print("4️⃣  Me Inscrever em Evento")
-        print("5️⃣  Excluir Evento")
-        print("6️⃣  Sair")
-        opcao = input("👉 Escolha uma opção: ").strip()
-        
-        if opcao == "1":
-            cadastrar_evento()
-        elif opcao == "2":
-            atualizar_evento()
-        elif opcao == "3":
-            print("Você escolheu a opção 'Visualizar Evento'")
-        elif opcao == "4":
-            print("Você escolheu a opção 'Me Inscrever em Evento'")
-        elif opcao == "5":
-            print("Você escolheu a opção 'Excluir Evento'")
-        elif opcao == "6":
-            print("\n👋 Saindo...\n")
-            break
-        else:
-            print("❌ Opção inválida, tente novamente.\n")
+    if tipo_usuario == "coordenador":
+        while True:
+            print("\n🎭 ===== MENU =====")
+            print("1️⃣ - Cadastrar Evento")
+            print("2️⃣ - Atualizar Evento")
+            print("3️⃣ - Visualizar Eventos")
+            print("4️⃣ - Visualizar Inscrições")
+            print("5️⃣ - Excluir Evento")
+            print("6️⃣ - Sair")
+            opcao = input("👉 Escolha uma opção: ").strip()
+            
+            if opcao == "1":
+                cadastrar_evento()
+            elif opcao == "2":
+                atualizar_evento()
+            elif opcao == "3":
+                visualizar_eventos()
+            elif opcao == "4":
+                print("Você escolheu a opção 'Visualizar Inscrições'")
+            elif opcao == "5":
+                print("Você escolheu a opção 'Excluir Evento'")
+            elif opcao == "6":
+                print("\n👋 Saindo...\n")
+                break
+            else:
+                print("❌ Opção inválida, tente novamente.\n")
+
+    else:
+        while True:
+            print("\n🎭 ===== MENU =====")
+            print("1️⃣ - Visualizar Eventos")
+            print("2️⃣ - Me inscrever em Evento")
+            print("3️⃣ - Sair")
+            opcao = input("👉 Escolha uma opção: ").strip()
+            if opcao == "1":
+                visualizar_eventos()
+            elif opcao == "2":
+                print("Você escolheu a opção 'Me Inscrever em Evento'")
+            elif opcao == "3":
+                print("\n👋 Saindo...\n")
+                break
+            else:
+                print("❌ Opção inválida, tente novamente.\n")
 
 menu()
