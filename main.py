@@ -179,7 +179,7 @@ def cadastrar_evento():
 
     evento = {'nome': nome, 'data': data, 'descricao': descricao, 'vagas': vagas, 'inscritos': []}
     eventos.append(evento)
-    eventos_inscricoes[nome] = []
+    eventos_inscricoes[nome.lower()] = []
     salvar_eventos(eventos, eventos_inscricoes)
     print("\n✅ Evento cadastrado com sucesso!")
     return
@@ -202,12 +202,25 @@ def atualizar_evento():
 
                 if alteracao == "nome":
                     novo_nome = input("📌 Novo nome do evento: ").strip()
-                    eventos_inscricoes[novo_nome] = eventos_inscricoes.pop(nome, [])
+                    chave_antiga = None
+                    for chave in eventos_inscricoes:
+                        if chave.lower() == nome.lower():
+                            chave_antiga = chave
+                            break
+                    if chave_antiga:
+                        eventos_inscricoes[novo_nome] = eventos_inscricoes.pop(chave_antiga)
+                    else:
+                        eventos_inscricoes[novo_nome] = []
                     evento["nome"] = novo_nome
+
+                    nome = novo_nome
+
                 elif alteracao == "data":
                     evento["data"] = input("📅 Nova data do evento (DD/MM/AAAA): ").strip()
+
                 elif alteracao in ["descricao", "descrição"]:
                     evento["descricao"] = input("📖 Nova descrição do evento: ").strip()
+                    
                 elif alteracao in ["qtde", "qtde de vagas"]:
                     while True:
                         try:
@@ -246,6 +259,27 @@ def visualizar_eventos():
         vagas_restantes = evento['vagas'] - len(evento['inscritos'])
         print(f"{i}. 🎫 {evento['nome']} - {evento['data']}\n 📖 {evento['descricao']}\n 🔢 Vagas restantes: {vagas_restantes}\n")
 
+
+def excluir_evento():
+    """Permite Excluir Evento do Sistema"""
+    eventos, eventos_inscricoes = carregar_eventos()
+
+    nome_evento = input("🚨 Digite o nome do evento que deseja excluir: ").strip()
+    eventos = [evento for evento in eventos if evento["nome"].lower() != nome_evento.lower()]
+    eventos_inscricoes.pop(nome_evento, None)
+
+    key_to_remove = None
+    for key in list(eventos_inscricoes.keys()):
+        if key.lower() == nome_evento.lower():
+            key_to_remove = key
+            break
+    if key_to_remove:
+        eventos_inscricoes.pop(key_to_remove, None)
+
+    salvar_eventos(eventos, eventos_inscricoes)
+    print("✅ Evento excluído com sucesso!\n")
+
+
 def menu():
     """Menu do Sistema"""
     carregar_eventos()
@@ -281,7 +315,7 @@ def menu():
             elif opcao == "4":
                 print("Você escolheu a opção 'Visualizar Inscrições'")
             elif opcao == "5":
-                print("Você escolheu a opção 'Excluir Evento'")
+                excluir_evento()
             elif opcao == "6":
                 print("\n👋 Saindo...\n")
                 break
