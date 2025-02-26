@@ -11,7 +11,7 @@ eventos_json = os.path.join(data_dir, "eventos.json")
 alunos_json = os.path.join(data_dir, "alunos.json")
 coordenadores_json = os.path.join(data_dir, "coordenadores.json")
 
-
+# Funções de Suporte
 def confirmar_acao(mensagem):
     """Funções de Suporte - Confirmar Ação"""
     while True:
@@ -41,7 +41,7 @@ def validar_data(data):
         return False
 
 
-
+# Persistência de Dados
 def carregar_eventos():
     """Carregando Eventos no JSON"""
 
