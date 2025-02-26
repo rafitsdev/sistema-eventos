@@ -91,25 +91,44 @@ def salvar_usuarios(alunos, coordenadores):
 
 def registrar_usuario():
     """Registrando Usuários no Sistema"""
-
     alunos, coordenadores = carregar_usuarios()
 
     nome = input("\n🆕 Digite seu nome: ").strip()
-    email = input("📧 Digite seu email: ").strip()
-    if not validar_email(email):
-        print("❌Email inválido. Tente novamente com o formato usario@exemplo.com")
-        return None, None
+
+    while True:
+        email = input("📧 Digite seu email: ").strip()
+        if not validar_email(email):
+            print("❌Email inválido. Tente novamente com o formato usario@exemplo.com")
+            continue
+
+
+        email_ja_registrado = False
+        for usuario in alunos.values():
+            if usuario["email"].strip().lower() == email.strip().lower():
+                email_ja_registrado = True
+                break
+            
+        if not email_ja_registrado:
+            for usuario in coordenadores.values():
+                if usuario["email"].strip().lower() == email.strip().lower():
+                    email_ja_registrado = True
+                    break
+        
+        if email_ja_registrado:
+            print("⚠ Esse email já está registrado!")
+            if confirmar_acao("⚠ Gostaria de tentar outro email? (S/N) "):
+                continue
+            else:
+                return None, None
+        else:
+            break
     
+
     while True:
         tipo = input("🎭 Tipo de usuário (Aluno/Coordenador): ").strip().lower()
         if tipo in ["aluno", "coordenador"]:
             break
         print("❌ Tipo inválido! Digite 'Aluno' ou 'Coordenador'. ")
-
-    if email in alunos or email in coordenadores:
-        print("⚠ Esse email já está registrado!")
-        if not confirmar_acao("⚠ Esse email já está registrado! Gostaria de tentar outro email? (S/N) "):
-            return None, None
 
     user_id = gerar_user_id(alunos) if tipo == "aluno" else gerar_user_id(coordenadores)
     curso = input("\n📚 Digite o curso que você está matriculado: ").strip() if tipo == "aluno" else None
