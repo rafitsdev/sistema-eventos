@@ -52,7 +52,8 @@ def carregar_eventos():
     with open(eventos_json, "r") as f:
         dados_eventos = json.load(f)
 
-    return dados_eventos.get("eventos", []), dados_eventos.get("inscricoes", {})
+    inscricoes = {k.lower(): v for k, v in dados_eventos.get("inscricoes", {}).items()}
+    return dados_eventos.get("eventos", []), inscricoes
 
 def salvar_eventos(eventos, eventos_inscricoes):
     """Salvando Eventos no JSON"""
@@ -88,7 +89,7 @@ def salvar_usuarios(alunos, coordenadores):
         json.dump(coordenadores, f, indent=4)
 
 
-
+# Funções de Login
 def registrar_usuario():
     """Registrando Usuários no Sistema"""
     alunos, coordenadores = carregar_usuarios()
@@ -96,9 +97,9 @@ def registrar_usuario():
     nome = input("\n🆕 Digite seu nome: ").strip()
 
     while True:
-        email = input("📧 Digite seu email: ").strip()
+        email = input("📧 Digite seu email: ").strip().lower()
         if not validar_email(email):
-            print("❌Email inválido. Tente novamente com o formato usario@exemplo.com")
+            print("❌Email inválido. Tente novamente com o formato usuario@exemplo.com")
             continue
 
 
@@ -149,29 +150,33 @@ def autenticar_usuario():
     
     while True:
         alunos, coordenadores = carregar_usuarios()
-        email = input("✉ Digite seu email para login: ").strip()
+        email = input("✉ Digite seu email para login: ").strip().lower()
         usuario_encontrado = None
+        usuario_id = None
 
-        for usuario in alunos.values():
-            if usuario["email"] == email:
+        for key, usuario in alunos.items():
+            if usuario["email"].strip().lower() == email:
                 usuario_encontrado = usuario
+                usuario_id = key
                 break
         
         if not usuario_encontrado:
-            for usuario in coordenadores.values():
-                if usuario["email"] == email:
+            for key, usuario in coordenadores.items():
+                if usuario["email"].strip().lower() == email:
                     usuario_encontrado = usuario
+                    usuario_id = key
                     break
 
         if usuario_encontrado:
-            print(f"✅ Login bem-sucedido! Olá, {usuario_encontrado['nome']} ({usuario['tipo'].capitalize()})!")
-            return usuario_encontrado["email"], usuario_encontrado["tipo"]
+            print(f"✅ Login bem-sucedido! Olá, {usuario_encontrado['nome']} ({usuario_encontrado['tipo'].capitalize()})!")
+            return usuario_id, usuario_encontrado["tipo"]
         
         if not confirmar_acao("\n❌ Usuário não encontrado. Gostaria de se cadastrar? (s/n) "):
             return None, None
         return registrar_usuario()
 
 
+# Funções Principais
 def cadastrar_evento():
     """Cadastrando Eventos no Sistema"""
     eventos, eventos_inscricoes = carregar_eventos()
@@ -311,7 +316,7 @@ def excluir_evento():
     evento_para_excluir = eventos_filtrados[escolha - 1]
 
     if not confirmar_acao(f"Você deseja realmente excluir o evento '{evento_para_excluir['nome']}' (S/N) "):
-        print("Operação cancelada")
+        print("🛑 Operação cancelada")
         return
 
     eventos = [evento for evento in eventos if evento["nome"].lower() != evento_para_excluir["nome"].lower()]
@@ -326,6 +331,85 @@ def excluir_evento():
     
     salvar_eventos(eventos, eventos_inscricoes)
     print("✅ Evento excluído com sucesso!\n")
+
+
+def inscricao_evento(usuario_id):
+    """Permite que um aluno se inscreva em um evento disponível,
+    atualizando também o dicionário de inscrições com um ID para cada inscrição.
+    Usa o user_id para identificar o aluno e armazena mais detalhes na lista de inscritos.
+    """
+    eventos, eventos_inscricoes = carregar_eventos()
+    alunos, coordenadores = carregar_usuarios()
+
+    if not eventos:
+        print("\n❌ Nenhum evento disponível no momento.")
+        return
+
+    print("\nEventos disponíveis:")
+    for i, evento in enumerate(eventos, 1):
+        vagas_restantes = evento['vagas'] - len(evento['inscritos'])
+        print(f"{i}. {evento['nome']} - {evento['data']} (Vagas restantes: {vagas_restantes})")
+
+    while True:
+        try:
+            escolha = int(input("🔢 Digite o número do evento no qual deseja se inscrever (ou 0 para cancelar): ").strip())
+            if escolha == 0:
+                print("🛑 Operação cancelada.")
+                return
+            if escolha < 1 or escolha > len(eventos):
+                print("⚠ Escolha inválida. Tente novamente.")
+                continue
+            break
+        except ValueError:
+            print("⚠ Entrada inválida. Por favor, insira um número.")
+
+    evento_escolhido = eventos[escolha - 1]
+    vagas_restantes = evento_escolhido['vagas'] - len(evento_escolhido['inscritos'])
+    if vagas_restantes <= 0:
+        print("❌ Esse evento já atingiu o limite de inscrições.")
+        return
+
+    if not confirmar_acao(f"Você deseja se inscrever no evento '{evento_escolhido['nome']}'? (S/N) "):
+        print("🛑 Operação cancelada.")
+        return
+
+
+    aluno_registrado = alunos.get(usuario_id)
+    if not aluno_registrado:
+        print("Erro: aluno não encontrado.")
+        return
+
+
+    if evento_escolhido["nome"] in aluno_registrado["inscricoes"]:
+        print("Você já está inscrito nesse evento!")
+        return
+
+
+    aluno_info = {
+        "id_aluno": usuario_id,
+        "aluno_nome": aluno_registrado["nome"],
+        "aluno_email": aluno_registrado["email"]
+    }
+    evento_escolhido["inscritos"].append(aluno_info)
+    aluno_registrado["inscricoes"].append(evento_escolhido["nome"])
+
+
+    chave_evento = evento_escolhido["nome"].strip().lower()
+    inscricoes_evento = eventos_inscricoes.get(chave_evento, [])
+    
+    novo_id = len(inscricoes_evento) + 1
+    nova_inscricao = {
+        "id_inscricao": novo_id,
+        "id_aluno": usuario_id,
+        "aluno_nome": aluno_registrado["nome"],
+        "aluno_email": aluno_registrado["email"]
+    }
+    inscricoes_evento.append(nova_inscricao)
+    eventos_inscricoes[chave_evento] = inscricoes_evento
+
+    salvar_eventos(eventos, eventos_inscricoes)
+    salvar_usuarios(alunos, coordenadores)
+    print(f"✅ Inscrição realizada com sucesso no evento '{evento_escolhido['nome']}'!")
 
 
 def menu():
@@ -380,7 +464,7 @@ def menu():
             if opcao == "1":
                 visualizar_eventos()
             elif opcao == "2":
-                print("Você escolheu a opção 'Me Inscrever em Evento'")
+                inscricao_evento(usuario_atual)
             elif opcao == "3":
                 print("\n👋 Saindo...\n")
                 break
