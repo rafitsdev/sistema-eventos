@@ -261,21 +261,50 @@ def visualizar_eventos():
 
 
 def excluir_evento():
-    """Permite Excluir Evento do Sistema"""
+    """Permite Excluir Evento do Sistema
+    
+    O usuário (coordenador) consegue pesquisar por parte do nome e recebe uma relação com todos os eventos
+    que possuem o termo pesquisado, após selecionar qual deseja excluir ainda recebe uam pergunta confirmando
+    se o evento selecionado é o correto, e após confirmação exclui o evento
+    """
     eventos, eventos_inscricoes = carregar_eventos()
 
-    nome_evento = input("🚨 Digite o nome do evento que deseja excluir: ").strip()
-    eventos = [evento for evento in eventos if evento["nome"].lower() != nome_evento.lower()]
-    eventos_inscricoes.pop(nome_evento, None)
+    nome_parcial = input("🚨 Digite o nome ou parte do nome do evento que deseja excluir: ").strip().lower()
+
+    eventos_filtrados = [evento for evento in eventos if nome_parcial in evento["nome"].lower()]
+    if not eventos_filtrados:
+        print("⚠ Nenhum evento encontrado com esse termo.")
+        return
+    
+    print("\nEventos encontrados:")
+    for i, evento in enumerate(eventos_filtrados, 1):
+        print(f"{i}. {evento['nome']}")
+
+    try:
+        escolha = int(input("Digite o número do evento que deseja excluir: ").strip())
+        if escolha < 1 or escolha > len(eventos_filtrados):
+            print("Escolha inválida")
+            return
+    except ValueError:
+        print("Entrada inválida.")
+        return
+
+    evento_para_excluir = eventos_filtrados[escolha - 1]
+
+    if not confirmar_acao(f"Você deseja realmente excluir o evento '{evento_para_excluir['nome']}' (S/N) "):
+        print("Operação cancelada")
+        return
+
+    eventos = [evento for evento in eventos if evento["nome"].lower() != evento_para_excluir["nome"].lower()]
 
     key_to_remove = None
     for key in list(eventos_inscricoes.keys()):
-        if key.lower() == nome_evento.lower():
+        if key.lower() == evento_para_excluir["nome"].lower():
             key_to_remove = key
             break
     if key_to_remove:
         eventos_inscricoes.pop(key_to_remove, None)
-
+    
     salvar_eventos(eventos, eventos_inscricoes)
     print("✅ Evento excluído com sucesso!\n")
 
