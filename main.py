@@ -88,6 +88,37 @@ def salvar_usuarios(alunos, coordenadores):
     with open(coordenadores_json, "w") as f:
         json.dump(coordenadores, f, indent=4)
 
+def filtragem_evento():
+    """Filtra eventos com base no termo digitado:
+    - Se o termo for numérico, retorna o evento correspondente ao índice (enumerate).
+    - Se for um trecho do nome, retorna todos os eventos que contenham esse trecho (case-insensitive).
+    """
+    eventos, _ = carregar_eventos()
+
+    if not eventos:
+        print("❌ Nenhum evento econtrado.")
+        return []
+    
+    print("\nEventos disponíveis:")
+    for i, evento in enumerate(eventos, 1):
+        print(f"{i}. {evento['nome']} - {evento['data']}")
+
+
+    termo = input("\nDigite o número do evento ou um trecho do nome para filtrar: ").strip()
+
+    if termo.isdigit():
+        indice = int(termo)
+        if 1 <= indice <= len(eventos):
+            return [eventos[indice - 1]]
+        else:
+            print("⚠ Número inválido")
+            return []
+    else:
+        evento_filtrado = [evento for evento in eventos if termo.lower() in evento["nome"].lower()]
+        if not evento_filtrado:
+            print("⚠ Nenhum evento encontrado com esse termo.")
+        return evento_filtrado
+
 
 # Funções de Login
 def registrar_usuario():
@@ -412,6 +443,88 @@ def inscricao_evento(usuario_id):
     print(f"✅ Inscrição realizada com sucesso no evento '{evento_escolhido['nome']}'!")
 
 
+def gerenciar_inscricoes_coord():
+    """Permite um coordenador visualizar as inscrições por evento"""
+
+    evento_filtrado = filtragem_evento()
+    alunos, coordenadores = carregar_usuarios()
+    eventos, eventos_inscricoes = carregar_eventos()
+    
+
+    if not evento_filtrado:
+        if confirmar_acao("❌ Nenhum evento disponível no momento. Gostaria de cadastrar um evento no sistema? (S/N)"):
+            cadastrar_evento()
+        return
+    
+    if len(evento_filtrado) == 1:
+        evento_escolhido = evento_filtrado[0]
+    else:
+        print("\nResultado da busca:\n")
+        for i, evento in enumerate(evento_filtrado, 1):
+            print(f"{i}. {evento['nome']}")
+        try:
+            escolha = int(input("Digite o número do evento que deseja visualizar as inscrições: ").strip())
+            if escolha < 1 or escolha > len(evento_filtrado):
+                if not confirmar_acao("Não encontramos o evento no sistema. Quer pesquisar por outro evento? (S/N) "):
+                    print("🛑 Operação Cancelada")
+                    return    
+            evento_escolhido = evento_filtrado[escolha - 1]
+        except ValueError:
+            print("❌ Entrada Inválida. Operação cancelada")
+            return
+
+
+    chave = evento_escolhido["nome"].strip().lower()
+    inscricoes = eventos_inscricoes.get(chave, [])
+
+    if not inscricoes:
+        if not confirmar_acao(f"\nNão há inscrições para o evento '{evento_escolhido['nome']}'. Quer pesquisar por outro evento? (S/N) "):
+            print("🛑 Operação Cancelada")
+            return
+        gerenciar_inscricoes_coord()
+    else:
+        print(f"\nInscrições para o evento '{evento_escolhido['nome']}':")
+        for insc in inscricoes:
+            print(f"ID Inscrição: {insc['id_inscricao']}, Aluno ID: {insc['id_aluno']}, Nome:{insc['aluno_nome']}, Email: {insc['aluno_email']}")
+
+    if not confirmar_acao("Deseja excluir alguma incsrição? (S/N) "):
+        return
+    
+    try:
+        id_para_excluir = int(input("Digite o ID da inscrição que deseja excluir: ").strip())
+    except ValueError:
+        print("🛑 Entrada inválida. Opereção cancelada!")
+        return
+    
+    inscricoes_restantes = [insc for insc in inscricoes if insc["id_inscricao"] != id_para_excluir] 
+    if len(inscricoes_restantes) == len(inscricoes):
+        if not confirmar_acao("Não encontramos a inscrição. Deseja pesquisar por outro ID? (S/N) "):
+            return
+
+    eventos_inscricoes[chave] = inscricoes_restantes
+
+    aluno_id_excluir = None
+    for insc in inscricoes:
+        if insc["id_inscricao"] == id_para_excluir:
+            aluno_id_excluir = insc["id_aluno"]
+            break
+
+    if aluno_id_excluir:
+        aluno_registrado = alunos.get(aluno_id_excluir)
+        if aluno_registrado and evento_escolhido["nome"] in aluno_registrado["inscricoes"]:
+            aluno_registrado["inscricoes"].remove(evento_escolhido["nome"])
+        nova_lista_inscritos = [al for al in evento_escolhido["inscritos"] if al["id_aluno"] != aluno_id_excluir]
+        evento_escolhido["inscritos"] = nova_lista_inscritos
+
+    for ev in eventos:
+        if ev["nome"].strip().lower() == chave:
+            ev["inscritos"] = evento_escolhido["inscritos"]
+            break
+
+    salvar_eventos(eventos, eventos_inscricoes)
+    salvar_usuarios(alunos, coordenadores)
+    print("✅ Inscrição excluída com sucesso!")
+
 def menu():
     """Menu do Sistema"""
     carregar_eventos()
@@ -445,7 +558,7 @@ def menu():
             elif opcao == "3":
                 visualizar_eventos()
             elif opcao == "4":
-                print("Você escolheu a opção 'Visualizar Inscrições'")
+                gerenciar_inscricoes_coord()
             elif opcao == "5":
                 excluir_evento()
             elif opcao == "6":
