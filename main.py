@@ -449,7 +449,7 @@ def gerenciar_inscricoes_coord():
     evento_filtrado = filtragem_evento()
     alunos, coordenadores = carregar_usuarios()
     eventos, eventos_inscricoes = carregar_eventos()
-    
+
 
     if not evento_filtrado:
         if confirmar_acao("❌ Nenhum evento disponível no momento. Gostaria de cadastrar um evento no sistema? (S/N)"):
@@ -525,6 +525,28 @@ def gerenciar_inscricoes_coord():
     salvar_usuarios(alunos, coordenadores)
     print("✅ Inscrição excluída com sucesso!")
 
+
+def visualizar_inscricoes_aluno(usuario_id):
+    """Permite ao aluno visualizar os eventos nos quais está inscrito"""
+
+    alunos, _ = carregar_usuarios()
+    aluno = alunos.get(usuario_id)
+    
+    if not aluno:
+        if confirmar_acao("Aluno não encontrado. Deseja se cadastrar? (S/N) "):
+            registrar_usuario()
+        return
+    inscricoes = aluno.get("inscricoes", [])
+    if not inscricoes:
+        if confirmar_acao("Você ainda não está inscrito em nenhum evento. Gostaria de ver os eventos disponíveis? (S/N) "):
+            inscricao_evento(usuario_id)
+        return
+    else:
+        print(f"\n👋 Olá, {aluno['nome']}! Você está inscrito nos seguintes eventos: ")
+        for evento in inscricoes:
+            print(f" - {evento}")
+
+
 def menu():
     """Menu do Sistema"""
     carregar_eventos()
@@ -572,13 +594,16 @@ def menu():
             print("\n🎭 ===== MENU =====")
             print("1️⃣ - Visualizar Eventos")
             print("2️⃣ - Me inscrever em Evento")
-            print("3️⃣ - Sair")
+            print("3️⃣ - Minhas Inscrições")
+            print("4️⃣ - Sair")
             opcao = input("👉 Escolha uma opção: ").strip()
             if opcao == "1":
                 visualizar_eventos()
             elif opcao == "2":
                 inscricao_evento(usuario_atual)
             elif opcao == "3":
+                visualizar_inscricoes_aluno(usuario_atual)
+            elif opcao == "4":
                 print("\n👋 Saindo...\n")
                 break
             else:
