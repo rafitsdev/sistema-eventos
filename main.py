@@ -310,9 +310,10 @@ def visualizar_eventos():
     if not eventos:
         print("\n❌ Nenhum evento disponível no momento.")
         return
+    print(f"{'ID':<5} 🎫 {'Nome':<20} 📅 {'Data':<12} 📖 {'Status':<12} 🔢 {'Vagas Rest.':<12}")
     for i, evento in enumerate(eventos, 1):
-        vagas_restantes = evento['vagas'] - len(evento['inscritos'])
-        print(f"{i}. 🎫 {evento['nome']} - {evento['data']}\n 📖 {evento['descricao']}\n 🔢 Vagas restantes: {vagas_restantes}\n")
+        print(f"{i:<5} {evento['nome']:<23} {evento['data']:<15} {evento.get('status', 'Desconhecido'):<15} {evento['vagas'] - len(evento['inscritos']):<12}")
+
 
 
 def excluir_evento():
